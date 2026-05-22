@@ -575,24 +575,33 @@ input {
 .wallet-modal {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 1000;
   display: grid;
   place-items: center;
   padding: 1rem;
   background: rgba(0, 0, 0, 0.62);
+  touch-action: manipulation;
 }
 
 .wallet-modal[hidden] {
-  display: none;
+  display: none !important;
+}
+
+body.wallet-modal-open {
+  overflow: hidden;
 }
 
 .modal-card {
+  position: relative;
+  z-index: 1;
   width: min(27rem, 100%);
   border: 1px solid var(--line);
   border-radius: 0.75rem;
   background: #101a2d;
   padding: 1rem;
   box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.46);
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .modal-head h2 {
@@ -630,6 +639,29 @@ input {
   color: var(--text);
   padding: 0.9rem;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.wallet-option--empty {
+  cursor: default;
+  pointer-events: none;
+}
+
+.wallet-modal-status {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.wallet-modal-status.is-error {
+  color: #ff8f7a;
+}
+
+.wallet-modal-status.is-success {
+  color: var(--green);
 }
 
 .wallet-option:hover {

@@ -8,7 +8,8 @@ const WALLET_ICON_MAP = [
   { match: ["metamask"], icon: "./assets/wallets/metamask.svg" },
   { match: ["coinbase"], icon: "./assets/wallets/coinbase.svg" },
   { match: ["trust"], icon: "./assets/wallets/trust.svg" },
-  { match: ["rabby"], icon: "./assets/wallets/rabby.svg" }
+  { match: ["rabby"], icon: "./assets/wallets/rabby.svg" },
+  { match: ["bitget", "bitkeep"], icon: "./assets/wallets/bitget.svg" }
 ];
 
 const NIUMA = {
@@ -50,6 +51,9 @@ let tokenDecimals = 18;
 let tokenBalance = 0n;
 let providerInfos = [];
 let stakeConfig;
+let walletDiscoveryReady = false;
+let walletRenderTimer;
+let walletConnecting = false;
 
 function formatAddress(address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -180,6 +184,7 @@ async function verifySiteAssets() {
 }
 
 function providerLabel(provider) {
+  if (provider.isBitKeep || provider.isBitget) return "Bitget Wallet";
   if (provider.isOkxWallet || provider.isOKExWallet) return "OKX Wallet";
   if (provider.isMetaMask) return "MetaMask";
   if (provider.isCoinbaseWallet) return "Coinbase Wallet";
@@ -189,42 +194,106 @@ function providerLabel(provider) {
 }
 
 function collectLegacyProviders() {
-  const eth = window.ethereum;
-  if (!eth) return [];
-  if (Array.isArray(eth.providers)) {
-    return eth.providers.map((provider) => ({
-      info: { name: providerLabel(provider), icon: "" },
+  const discovered = new Map();
+  const addProvider = (provider, name) => {
+    if (!provider?.request) return;
+    const key = provider.provider?.connectionInfo?.rdns
+      || provider.provider?.isMetaMask && "metamask"
+      || name
+      || provider;
+    if (discovered.has(key)) return;
+    discovered.set(key, {
+      info: { name: name || providerLabel(provider), icon: "" },
       provider
-    }));
+    });
+  };
+
+  const eth = window.ethereum;
+  if (Array.isArray(eth?.providers)) {
+    eth.providers.forEach((provider) => addProvider(provider));
+  } else if (eth) {
+    addProvider(eth);
   }
-  return [{ info: { name: providerLabel(eth), icon: "" }, provider: eth }];
+
+  if (window.okxwallet) addProvider(window.okxwallet, "OKX Wallet");
+  if (window.bitkeep?.ethereum) addProvider(window.bitkeep.ethereum, "Bitget Wallet");
+
+  return [...discovered.values()];
+}
+
+function scheduleRenderWallets() {
+  clearTimeout(walletRenderTimer);
+  walletRenderTimer = setTimeout(renderWallets, 80);
 }
 
 function discoverWallets() {
+  if (walletDiscoveryReady) return;
+  walletDiscoveryReady = true;
+
   const discovered = new Map();
-  window.addEventListener("eip6963:announceProvider", (event) => {
-    const detail = event.detail;
-    if (!detail?.provider) return;
-    const key = detail.info?.uuid || detail.info?.rdns || detail.info?.name || Math.random().toString(36);
+  const upsertProvider = (detail) => {
+    if (!detail?.provider?.request) return;
+    const key = detail.info?.uuid || detail.info?.rdns || detail.info?.name || detail.provider;
     discovered.set(key, detail);
     providerInfos = [...discovered.values()];
-    renderWallets();
+    scheduleRenderWallets();
+  };
+
+  window.addEventListener("eip6963:announceProvider", (event) => {
+    upsertProvider(event.detail);
   });
+
   window.dispatchEvent(new Event("eip6963:requestProvider"));
+
   setTimeout(() => {
     if (discovered.size === 0) {
       providerInfos = collectLegacyProviders();
       renderWallets();
     }
-  }, 300);
+  }, 400);
+}
+
+function refreshWalletList() {
+  if (providerInfos.length === 0) {
+    providerInfos = collectLegacyProviders();
+  }
+  renderWallets();
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+}
+
+function openWalletModal() {
+  refreshWalletList();
+  els.walletModal.hidden = false;
+  document.body.classList.add("wallet-modal-open");
+}
+
+function closeWalletModal() {
+  els.walletModal.hidden = true;
+  document.body.classList.remove("wallet-modal-open");
+}
+
+function setWalletModalStatus(message, type = "") {
+  let status = els.walletList.querySelector(".wallet-modal-status");
+  if (!message) {
+    status?.remove();
+    return;
+  }
+  if (!status) {
+    status = document.createElement("p");
+    status.className = "wallet-modal-status";
+    els.walletList.prepend(status);
+  }
+  status.textContent = message;
+  status.classList.toggle("is-error", type === "error");
+  status.classList.toggle("is-success", type === "success");
 }
 
 function renderWallets() {
-  els.walletList.innerHTML = "";
+  els.walletList.replaceChildren();
   if (providerInfos.length === 0) {
     const empty = document.createElement("div");
-    empty.className = "wallet-option";
-    empty.textContent = "未检测到钱包，请安装 OKX Wallet、MetaMask、Coinbase Wallet 或其他 EVM 钱包。";
+    empty.className = "wallet-option wallet-option--empty";
+    empty.textContent = "未检测到钱包，请安装 OKX Wallet、Bitget Wallet、MetaMask 或其他 EVM 钱包。";
     els.walletList.append(empty);
     return;
   }
@@ -234,8 +303,15 @@ function renderWallets() {
     button.className = "wallet-option";
     const name = item.info?.name || providerLabel(item.provider);
     const iconPath = resolveWalletIcon(item);
-    button.innerHTML = `<span>${name}</span><img src="${iconPath}" alt="" width="28" height="28" decoding="async" data-fallback="${SITE_ASSETS.walletDefault}" />`;
-    button.addEventListener("click", () => connectWallet(item.provider));
+    button.innerHTML = `<span>${name}</span><img src="${iconPath}" alt="" width="28" height="28" decoding="async" draggable="false" data-fallback="${SITE_ASSETS.walletDefault}" />`;
+    const provider = item.provider;
+    const onPick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (walletConnecting) return;
+      connectWallet(provider);
+    };
+    button.addEventListener("click", onPick);
     els.walletList.append(button);
     bindImageFallbacks(button);
   }
@@ -289,14 +365,24 @@ async function loadBalance() {
 }
 
 async function connectWallet(provider) {
+  if (!provider?.request) {
+    setWalletModalStatus("钱包接口不可用，请刷新页面后重试。", "error");
+    return;
+  }
+  walletConnecting = true;
+  setWalletModalStatus("正在连接钱包，请在钱包应用中确认…");
   try {
     selectedProvider = provider;
     const accounts = await request(provider, "eth_requestAccounts");
     selectedAccount = accounts[0] || "";
+    if (!selectedAccount) {
+      throw new Error("未获取到钱包地址，请重试。");
+    }
     await ensureXLayer();
     await loadTokenMeta();
     await loadBalance();
-    els.walletModal.hidden = true;
+    closeWalletModal();
+    setWalletModalStatus("");
     setStatus("钱包已连接，可输入数量进行质押。", "success");
 
     provider.on?.("accountsChanged", async (accounts) => {
@@ -319,7 +405,13 @@ async function connectWallet(provider) {
       }
     });
   } catch (error) {
-    setStatus(error?.message || "钱包连接失败，请重试。", "error");
+    const message = error?.code === 4001
+      ? "你已取消连接。"
+      : (error?.message || "钱包连接失败，请重试。");
+    setWalletModalStatus(message, "error");
+    setStatus(message, "error");
+  } finally {
+    walletConnecting = false;
   }
 }
 
@@ -327,7 +419,7 @@ async function stakeNiuma(event) {
   event.preventDefault();
   try {
     if (!selectedProvider || !selectedAccount) {
-      els.walletModal.hidden = false;
+      openWalletModal();
       return;
     }
     await ensureXLayer();
@@ -360,17 +452,22 @@ async function stakeNiuma(event) {
   }
 }
 
-els.walletButton.addEventListener("click", () => {
-  discoverWallets();
-  els.walletModal.hidden = false;
+els.walletButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  openWalletModal();
 });
 
-els.closeModal.addEventListener("click", () => {
-  els.walletModal.hidden = true;
+els.closeModal.addEventListener("click", (event) => {
+  event.preventDefault();
+  closeWalletModal();
+});
+
+els.walletModal.querySelector(".modal-card")?.addEventListener("click", (event) => {
+  event.stopPropagation();
 });
 
 els.walletModal.addEventListener("click", (event) => {
-  if (event.target === els.walletModal) els.walletModal.hidden = true;
+  if (event.target === els.walletModal) closeWalletModal();
 });
 
 els.stakeAmount.addEventListener("input", updateProjection);
