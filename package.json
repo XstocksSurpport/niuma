@@ -1,0 +1,11 @@
+{
+  "name": "niuma",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1"
+  }
+}

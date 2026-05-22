@@ -3,12 +3,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = __dirname;
+const dist = path.join(root, "dist");
+const serveRoot = fs.existsSync(dist) ? dist : root;
 const port = Number(process.env.PORT || 4173);
 
-const stakeConfig = {
-  token: "0x87669801a1fad6dad9db70d27ac752f452989667",
-  vault: "0xFDC18444eca2FEfd44fA7516Ff994aAfC17C4fD5"
-};
+const stakeConfig = JSON.parse(
+  fs.readFileSync(path.join(root, "config", "stake-config.json"), "utf8")
+);
 
 const stakedState = {
   base: 428244751,
@@ -45,9 +46,9 @@ function currentNetworkStaked() {
 function serveFile(req, res) {
   const urlPath = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
   const requested = urlPath === "/" ? "/index.html" : urlPath;
-  const filePath = path.normalize(path.join(root, requested));
+  const filePath = path.normalize(path.join(serveRoot, requested));
 
-  if (!filePath.startsWith(root)) {
+  if (!filePath.startsWith(serveRoot)) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
