@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NIUMA</title>
     <meta name="description" content="NIUMA X Layer 生态质押入口" />
-    <link rel="icon" href="./assets/niuma.png" />
+    <link rel="icon" type="image/png" href="./assets/niuma.png" />
+    <link rel="apple-touch-icon" href="./assets/niuma.png" />
+    <link rel="preload" href="./assets/niuma.png" as="image" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="site-header">
       <a class="brand" href="#top" aria-label="NIUMA">
-        <img src="./assets/niuma.png" alt="NIUMA" />
+        <img class="site-img" src="./assets/niuma.png" alt="NIUMA" width="40" height="40" decoding="async" data-fallback="./assets/niuma.png" />
         <span>NIUMA</span>
       </a>
       <nav class="nav-links" aria-label="主导航">
@@ -42,7 +44,7 @@
           </div>
           <div class="coin-ring">
             <div class="coin-core">
-              <img src="./assets/niuma.png" alt="NIUMA" />
+              <img class="site-img site-img--hero" src="./assets/niuma.png" alt="NIUMA" width="160" height="160" decoding="async" data-fallback="./assets/niuma.png" />
             </div>
             <strong>NIUMA</strong>
           </div>

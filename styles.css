@@ -78,10 +78,20 @@ input {
   letter-spacing: 0;
 }
 
-.brand img {
+.site-img {
+  object-fit: contain;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.brand img,
+.brand .site-img {
   width: 2.5rem;
   height: 2.5rem;
-  object-fit: contain;
+}
+
+.site-img.is-fallback {
+  opacity: 0.92;
 }
 
 .nav-links {
@@ -240,10 +250,14 @@ input {
   background: rgba(255, 122, 0, 0.17);
 }
 
-.coin-core img {
+.coin-core img,
+.coin-core .site-img {
   width: 70%;
   height: 70%;
-  object-fit: contain;
+}
+
+.site-img--hero {
+  border-radius: 50%;
 }
 
 .supply-badge,
@@ -626,6 +640,9 @@ input {
   width: 1.8rem;
   height: 1.8rem;
   object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .site-footer {

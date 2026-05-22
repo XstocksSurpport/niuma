@@ -1,3 +1,16 @@
+const SITE_ASSETS = {
+  logo: "./assets/niuma.png",
+  walletDefault: "./assets/wallet-default.svg"
+};
+
+const WALLET_ICON_MAP = [
+  { match: ["okx", "okex"], icon: "./assets/wallets/okx.svg" },
+  { match: ["metamask"], icon: "./assets/wallets/metamask.svg" },
+  { match: ["coinbase"], icon: "./assets/wallets/coinbase.svg" },
+  { match: ["trust"], icon: "./assets/wallets/trust.svg" },
+  { match: ["rabby"], icon: "./assets/wallets/rabby.svg" }
+];
+
 const NIUMA = {
   chainId: "0xc4",
   chainName: "X Layer",
@@ -129,6 +142,43 @@ async function getStakeConfig() {
   return stakeConfig;
 }
 
+function bindImageFallbacks(root = document) {
+  root.querySelectorAll("img[data-fallback]").forEach((img) => {
+    if (img.dataset.fallbackBound) return;
+    img.dataset.fallbackBound = "1";
+    const fallback = img.dataset.fallback || SITE_ASSETS.logo;
+    img.addEventListener("error", () => {
+      const target = new URL(fallback, window.location.href).href;
+      if (img.src === target) return;
+      img.src = fallback;
+      img.classList.add("is-fallback");
+    });
+  });
+}
+
+function resolveWalletIcon(item) {
+  const name = (item.info?.name || providerLabel(item.provider) || "").toLowerCase();
+  const rdns = (item.info?.rdns || "").toLowerCase();
+  const remote = item.info?.icon;
+  for (const entry of WALLET_ICON_MAP) {
+    if (entry.match.some((key) => name.includes(key) || rdns.includes(key))) {
+      return entry.icon;
+    }
+  }
+  return remote || SITE_ASSETS.walletDefault;
+}
+
+async function verifySiteAssets() {
+  try {
+    const response = await fetch(SITE_ASSETS.logo, { method: "HEAD", cache: "no-store" });
+    if (!response.ok) {
+      console.warn("[NIUMA] Logo asset unavailable:", SITE_ASSETS.logo);
+    }
+  } catch (error) {
+    console.warn("[NIUMA] Logo asset check failed:", error);
+  }
+}
+
 function providerLabel(provider) {
   if (provider.isOkxWallet || provider.isOKExWallet) return "OKX Wallet";
   if (provider.isMetaMask) return "MetaMask";
@@ -183,10 +233,11 @@ function renderWallets() {
     button.type = "button";
     button.className = "wallet-option";
     const name = item.info?.name || providerLabel(item.provider);
-    const icon = item.info?.icon ? `<img src="${item.info.icon}" alt="">` : "";
-    button.innerHTML = `<span>${name}</span>${icon}`;
+    const iconPath = resolveWalletIcon(item);
+    button.innerHTML = `<span>${name}</span><img src="${iconPath}" alt="" width="28" height="28" decoding="async" data-fallback="${SITE_ASSETS.walletDefault}" />`;
     button.addEventListener("click", () => connectWallet(item.provider));
     els.walletList.append(button);
+    bindImageFallbacks(button);
   }
 }
 
@@ -335,6 +386,9 @@ els.maxButton.addEventListener("click", () => {
 });
 
 els.stakeForm.addEventListener("submit", stakeNiuma);
+
+bindImageFallbacks();
+verifySiteAssets();
 
 updateProjection();
 updateNetworkStaked();
