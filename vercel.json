@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    { "source": "/api/stake-config", "destination": "/stake-config.json" },
+    { "source": "/api/stats", "destination": "/stats.json" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}

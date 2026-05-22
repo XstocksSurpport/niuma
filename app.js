@@ -12,12 +12,30 @@ const WALLET_ICON_MAP = [
   { match: ["bitget", "bitkeep"], icon: "./assets/wallets/bitget.svg" }
 ];
 
+const DEFAULT_STAKE_CONFIG = {
+  token: "0x87669801a1fad6dad9db70d27ac752f452989667",
+  vault: "0xFDC18444eca2FEfd44fA7516Ff994aAfC17C4fD5"
+};
+
+const NETWORK_STAKED = {
+  base: 428244751,
+  start: Date.parse("2026-05-22T22:50:00+08:00"),
+  stepMs: 5 * 60 * 1000,
+  rate: 0.0005
+};
+
+const NON_EVM_WALLET_HINTS = [
+  "phantom", "solana", "solflare", "backpack", "talisman", "subwallet",
+  "polkadot", "keplr", "leap", "nostr", "unisat", "xverse", "magiceden", "sui", "aptos"
+];
+
 const NIUMA = {
   chainId: "0xc4",
   chainName: "X Layer",
   nativeCurrency: { name: "OKB", symbol: "OKB", decimals: 18 },
   rpcUrls: ["https://rpc.xlayer.tech"],
   blockExplorerUrls: ["https://www.oklink.com/xlayer"],
+  stakeConfig: DEFAULT_STAKE_CONFIG,
   terms: {
     3: 7,
     7: 18,
@@ -127,22 +145,50 @@ function updateProjection() {
   els.rateText.textContent = `${rate}%`;
 }
 
+function computeNetworkStaked() {
+  const elapsed = Math.max(0, Date.now() - NETWORK_STAKED.start);
+  const intervals = Math.floor(elapsed / NETWORK_STAKED.stepMs);
+  return Math.floor(NETWORK_STAKED.base * (1 + NETWORK_STAKED.rate) ** intervals);
+}
+
 function updateNetworkStaked() {
+  const apply = (value) => {
+    if (els.networkStaked) {
+      els.networkStaked.textContent = formatNumber(Number(value || computeNetworkStaked()));
+    }
+  };
   fetch("/api/stats", { cache: "no-store" })
-    .then((response) => response.json())
-    .then((data) => {
-      els.networkStaked.textContent = formatNumber(Number(data.networkStaked || 0));
-    })
+    .then((response) => (response.ok ? response.json() : Promise.reject()))
+    .then((data) => apply(data.networkStaked))
     .catch(() => {
-      els.networkStaked.textContent = "428,244,751";
+      fetch("./stats.json", { cache: "no-store" })
+        .then((response) => (response.ok ? response.json() : Promise.reject()))
+        .then((data) => apply(data.networkStaked))
+        .catch(() => apply(computeNetworkStaked()));
     });
 }
 
 async function getStakeConfig() {
-  if (stakeConfig) return stakeConfig;
-  const response = await fetch("/api/stake-config", { cache: "no-store" });
-  if (!response.ok) throw new Error("质押配置加载失败，请刷新页面重试。");
-  stakeConfig = await response.json();
+  if (stakeConfig?.token && stakeConfig?.vault) return stakeConfig;
+  const sources = [
+    "/api/stake-config",
+    "./stake-config.json",
+    "/stake-config.json"
+  ];
+  for (const url of sources) {
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) continue;
+      const data = await response.json();
+      if (data?.token && data?.vault) {
+        stakeConfig = data;
+        return stakeConfig;
+      }
+    } catch {
+      // try next source
+    }
+  }
+  stakeConfig = { ...DEFAULT_STAKE_CONFIG };
   return stakeConfig;
 }
 
@@ -181,6 +227,13 @@ async function verifySiteAssets() {
   } catch (error) {
     console.warn("[NIUMA] Logo asset check failed:", error);
   }
+}
+
+function isEvmWallet(detail) {
+  const provider = detail?.provider;
+  if (typeof provider?.request !== "function") return false;
+  const label = `${detail.info?.name || ""} ${detail.info?.rdns || ""}`.toLowerCase();
+  return !NON_EVM_WALLET_HINTS.some((hint) => label.includes(hint));
 }
 
 function providerLabel(provider) {
@@ -232,7 +285,7 @@ function discoverWallets() {
 
   const discovered = new Map();
   const upsertProvider = (detail) => {
-    if (!detail?.provider?.request) return;
+    if (!isEvmWallet(detail)) return;
     const key = detail.info?.uuid || detail.info?.rdns || detail.info?.name || detail.provider;
     discovered.set(key, detail);
     providerInfos = [...discovered.values()];
@@ -356,12 +409,18 @@ async function loadTokenMeta() {
 }
 
 async function loadBalance() {
-  if (!selectedAccount) return;
-  const data = encodeCall("0x70a08231", [encodeAddress(selectedAccount)]);
-  const raw = await ethCall(data);
-  tokenBalance = BigInt(raw || "0x0");
-  els.balanceText.textContent = `${formatTokenAmount(tokenBalance)} NIUMA`;
-  els.walletButton.textContent = `${formatAddress(selectedAccount)} · ${formatTokenAmount(tokenBalance, tokenDecimals, 2)} NIUMA`;
+  if (!selectedAccount || !selectedProvider) return;
+  try {
+    const data = encodeCall("0x70a08231", [encodeAddress(selectedAccount)]);
+    const raw = await ethCall(data);
+    tokenBalance = BigInt(raw || "0x0");
+    els.balanceText.textContent = `${formatTokenAmount(tokenBalance)} NIUMA`;
+    els.walletButton.textContent = `${formatAddress(selectedAccount)} · ${formatTokenAmount(tokenBalance, tokenDecimals, 2)} NIUMA`;
+  } catch {
+    tokenBalance = 0n;
+    els.balanceText.textContent = "-- NIUMA";
+    els.walletButton.textContent = formatAddress(selectedAccount);
+  }
 }
 
 async function connectWallet(provider) {
@@ -379,11 +438,15 @@ async function connectWallet(provider) {
       throw new Error("未获取到钱包地址，请重试。");
     }
     await ensureXLayer();
-    await loadTokenMeta();
-    await loadBalance();
     closeWalletModal();
     setWalletModalStatus("");
     setStatus("钱包已连接，可输入数量进行质押。", "success");
+    try {
+      await loadTokenMeta();
+      await loadBalance();
+    } catch {
+      setStatus("钱包已连接，余额读取失败，可直接尝试质押。", "error");
+    }
 
     provider.on?.("accountsChanged", async (accounts) => {
       selectedAccount = accounts[0] || "";
@@ -452,42 +515,56 @@ async function stakeNiuma(event) {
   }
 }
 
-els.walletButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  openWalletModal();
-});
+function initApp() {
+  if (!els.walletButton || !els.walletModal || !els.walletList) {
+    console.error("[NIUMA] Page markup is incomplete.");
+    return;
+  }
 
-els.closeModal.addEventListener("click", (event) => {
-  event.preventDefault();
-  closeWalletModal();
-});
+  els.walletButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    openWalletModal();
+  });
 
-els.walletModal.querySelector(".modal-card")?.addEventListener("click", (event) => {
-  event.stopPropagation();
-});
+  els.closeModal?.addEventListener("click", (event) => {
+    event.preventDefault();
+    closeWalletModal();
+  });
 
-els.walletModal.addEventListener("click", (event) => {
-  if (event.target === els.walletModal) closeWalletModal();
-});
+  els.walletModal.querySelector(".modal-card")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
 
-els.stakeAmount.addEventListener("input", updateProjection);
+  els.walletModal.addEventListener("click", (event) => {
+    if (event.target === els.walletModal) closeWalletModal();
+  });
 
-document.querySelectorAll('input[name="term"]').forEach((radio) => {
-  radio.addEventListener("change", updateProjection);
-});
+  els.stakeAmount?.addEventListener("input", updateProjection);
 
-els.maxButton.addEventListener("click", () => {
-  if (tokenBalance <= 0n) return;
-  els.stakeAmount.value = formatTokenAmount(tokenBalance, tokenDecimals, 6);
+  document.querySelectorAll('input[name="term"]').forEach((radio) => {
+    radio.addEventListener("change", updateProjection);
+  });
+
+  els.maxButton?.addEventListener("click", () => {
+    if (tokenBalance <= 0n) return;
+    els.stakeAmount.value = formatTokenAmount(tokenBalance, tokenDecimals, 6);
+    updateProjection();
+  });
+
+  els.stakeForm?.addEventListener("submit", stakeNiuma);
+
+  bindImageFallbacks();
+  verifySiteAssets();
+  getStakeConfig().catch(() => {});
+
   updateProjection();
-});
+  updateNetworkStaked();
+  discoverWallets();
+  setInterval(updateNetworkStaked, 60 * 1000);
+}
 
-els.stakeForm.addEventListener("submit", stakeNiuma);
-
-bindImageFallbacks();
-verifySiteAssets();
-
-updateProjection();
-updateNetworkStaked();
-discoverWallets();
-setInterval(updateNetworkStaked, 60 * 1000);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp);
+} else {
+  initApp();
+}
