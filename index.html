@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NIUMA</title>
+    <meta name="description" content="NIUMA X Layer 生态质押入口" />
+    <link rel="icon" href="./assets/niuma.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="NIUMA">
+        <img src="./assets/niuma.png" alt="NIUMA" />
+        <span>NIUMA</span>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="#stake">质押</a>
+        <a href="#token">代币</a>
+        <a href="#community">社区</a>
+        <a href="#roadmap">路线图</a>
+      </nav>
+      <button class="wallet-button" id="walletButton" type="button">连接钱包</button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">XLayer上的Meme币</span>
+          <h1>NIUMA 质押</h1>
+          <p>勤劳、坚韧与团结的牛马精神，在 X Layer 链上沉淀价值，和社区一起把长期共识做实。</p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#stake">开始质押</a>
+            <a class="ghost-link" href="#token">了解 NIUMA</a>
+          </div>
+        </div>
+
+        <div class="hero-coin" aria-label="NIUMA">
+          <div class="supply-badge">
+            <span>总供应量</span>
+            <strong>10 亿</strong>
+          </div>
+          <div class="coin-ring">
+            <div class="coin-core">
+              <img src="./assets/niuma.png" alt="NIUMA" />
+            </div>
+            <strong>NIUMA</strong>
+          </div>
+          <div class="chain-badge">
+            <span>链</span>
+            <strong>XLayer</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-band" aria-label="质押数据">
+        <div>
+          <span>当前全网质押数量</span>
+          <strong id="networkStaked">428,244,751</strong>
+        </div>
+        <div>
+          <span>目标网络</span>
+          <strong>X Layer</strong>
+        </div>
+        <div>
+          <span>钱包余额</span>
+          <strong id="balanceText">-- NIUMA</strong>
+        </div>
+      </section>
+
+      <section class="stake-section" id="stake">
+        <div class="section-heading">
+          <span>NIUMA Staking</span>
+          <h2>选择周期，锁定收益</h2>
+          <p>输入数量后即可同步预估收益与生态积分。点击质押会唤起已连接钱包完成链上支付。</p>
+        </div>
+
+        <div class="stake-layout">
+          <form class="stake-panel" id="stakeForm">
+            <div class="field-row">
+              <label for="stakeAmount">质押数量</label>
+              <button class="max-button" id="maxButton" type="button">MAX</button>
+            </div>
+            <div class="amount-box">
+              <input id="stakeAmount" name="stakeAmount" type="text" inputmode="decimal" placeholder="0.00" autocomplete="off" />
+              <span>NIUMA</span>
+            </div>
+
+            <fieldset class="term-grid">
+              <legend>质押天数</legend>
+              <label>
+                <input type="radio" name="term" value="3" checked />
+                <span><strong>3天</strong><em>7%</em></span>
+              </label>
+              <label>
+                <input type="radio" name="term" value="7" />
+                <span><strong>7天</strong><em>18%</em></span>
+              </label>
+              <label>
+                <input type="radio" name="term" value="31" />
+                <span><strong>31天</strong><em>45%</em></span>
+              </label>
+              <label>
+                <input type="radio" name="term" value="180" />
+                <span><strong>180天</strong><em>120%</em></span>
+              </label>
+              <label>
+                <input type="radio" name="term" value="360" />
+                <span><strong>360天</strong><em>210%</em></span>
+              </label>
+            </fieldset>
+
+            <div class="projection-grid">
+              <div>
+                <span>预计收益</span>
+                <strong id="rewardText">0 NIUMA</strong>
+              </div>
+              <div>
+                <span>生态积分</span>
+                <strong id="pointsText">0</strong>
+              </div>
+              <div>
+                <span>到期合计</span>
+                <strong id="totalText">0 NIUMA</strong>
+              </div>
+              <div>
+                <span>当前利率</span>
+                <strong id="rateText">7%</strong>
+              </div>
+            </div>
+
+            <p class="status-line" id="statusLine">请先连接钱包并确认网络为 X Layer。</p>
+            <button class="stake-button" id="stakeButton" type="submit">质押 NIUMA</button>
+          </form>
+
+          <aside class="info-panel">
+            <h3>牛马精神，链上共建</h3>
+            <p>从一个轻松的梗，到持续生长的文化符号，NIUMA 的每一步都来自社区的真实参与。</p>
+            <div class="info-list">
+              <div><span>社区驱动</span><strong>2,000+ 成员</strong></div>
+              <div><span>生态入口</span><strong>OKX / X Layer</strong></div>
+              <div><span>共识方向</span><strong>长期建设</strong></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="content-grid" id="token">
+        <article>
+          <span>Token</span>
+          <h2>NIUMA 代币信息</h2>
+          <p>NIUMA 是 X Layer 生态上的社区 Meme 资产，总供应量 10 亿，承载勤劳、坚韧、团结的社区叙事。</p>
+        </article>
+        <article>
+          <span>Chain</span>
+          <h2>X Layer 生态</h2>
+          <p>X Layer 提供安全、快速、低成本的交易体验，让社区资产更适合高频互动、长期持有与生态协作。</p>
+        </article>
+        <article id="community">
+          <span>Community</span>
+          <h2>加入牛马社区</h2>
+          <p>每一位成员都是故事的一部分。传播、创作、参与、质押，共同把 NIUMA 做成有生命力的文化品牌。</p>
+        </article>
+      </section>
+
+      <section class="roadmap" id="roadmap">
+        <div class="section-heading">
+          <span>Roadmap</span>
+          <h2>NIUMA 路线图</h2>
+        </div>
+        <div class="roadmap-items">
+          <div><strong>品牌化</strong><p>完善官网入口、视觉资产与社区内容矩阵。</p></div>
+          <div><strong>生态化</strong><p>围绕 X Layer 持续扩展交易、数据、质押与社区工具。</p></div>
+          <div><strong>价值化</strong><p>通过长期共建，让 NIUMA 成为持续创造真实价值的文化符号。</p></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="wallet-modal" id="walletModal" hidden>
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2>选择钱包</h2>
+          <button type="button" id="closeModal" aria-label="关闭">×</button>
+        </div>
+        <div class="wallet-list" id="walletList"></div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <span>© 2026 NIUMA</span>
+      <span>社区驱动，参与需谨慎。</span>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
