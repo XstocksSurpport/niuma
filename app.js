@@ -121,6 +121,7 @@ function formatNumber(value, digits = 0) {
 }
 
 function setStatus(message, type = "") {
+  if (!els.statusLine) return;
   els.statusLine.textContent = message;
   els.statusLine.classList.toggle("is-error", type === "error");
   els.statusLine.classList.toggle("is-success", type === "success");
@@ -153,19 +154,15 @@ function computeNetworkStaked() {
 
 function updateNetworkStaked() {
   const apply = (value) => {
-    if (els.networkStaked) {
+    if (els.statusLine && els.networkStaked) {
       els.networkStaked.textContent = formatNumber(Number(value || computeNetworkStaked()));
     }
   };
+  apply(computeNetworkStaked());
   fetch("/api/stats", { cache: "no-store" })
     .then((response) => (response.ok ? response.json() : Promise.reject()))
     .then((data) => apply(data.networkStaked))
-    .catch(() => {
-      fetch("./stats.json", { cache: "no-store" })
-        .then((response) => (response.ok ? response.json() : Promise.reject()))
-        .then((data) => apply(data.networkStaked))
-        .catch(() => apply(computeNetworkStaked()));
-    });
+    .catch(() => {});
 }
 
 async function getStakeConfig() {
