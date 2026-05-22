@@ -1,0 +1,712 @@
+:root {
+  color-scheme: dark;
+  --bg: #081323;
+  --panel: rgba(17, 28, 47, 0.78);
+  --panel-strong: rgba(22, 35, 58, 0.94);
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #f7fbff;
+  --muted: rgba(247, 251, 255, 0.68);
+  --faint: rgba(247, 251, 255, 0.46);
+  --orange: #ff7a00;
+  --green: #31cc7a;
+  --gold: #f1a316;
+  --cyan: #1cb8b3;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255, 122, 0, 0.26), transparent 32rem),
+    radial-gradient(circle at 12% 62%, rgba(28, 184, 179, 0.22), transparent 28rem),
+    linear-gradient(135deg, #081323 0%, #121327 46%, #28170f 100%);
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.18) 0 2px, transparent 3px),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 17rem 13rem, 100% 5rem;
+  opacity: 0.42;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.1rem clamp(1rem, 4vw, 3rem);
+  background: rgba(8, 19, 35, 0.78);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.brand img {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.8rem);
+  color: var(--muted);
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.nav-links a:hover {
+  color: var(--orange);
+}
+
+.wallet-button,
+.primary-link,
+.stake-button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 1.1rem 2.5rem rgba(255, 122, 0, 0.24);
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.wallet-button {
+  min-width: 9.6rem;
+  padding: 0.86rem 1.35rem;
+}
+
+.wallet-button:hover,
+.primary-link:hover,
+.stake-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(22rem, 0.95fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  min-height: calc(100vh - 5rem);
+  padding: clamp(4rem, 8vw, 7rem) clamp(1rem, 4vw, 3rem) 3rem;
+}
+
+.hero-copy {
+  max-width: 48rem;
+}
+
+.eyebrow,
+.section-heading span,
+.content-grid article > span {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 2.3rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 122, 0, 0.16);
+  color: var(--orange);
+  font-weight: 900;
+}
+
+.hero h1 {
+  margin: 1.8rem 0 1.5rem;
+  font-size: clamp(3.6rem, 9vw, 8rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.hero p,
+.section-heading p,
+.content-grid p,
+.info-panel p,
+.roadmap p {
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.hero p {
+  max-width: 43rem;
+  font-size: clamp(1.05rem, 1.5vw, 1.32rem);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.primary-link,
+.ghost-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9.5rem;
+  min-height: 3.9rem;
+  padding: 0 1.6rem;
+  font-size: 1.05rem;
+}
+
+.ghost-link {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  color: var(--text);
+  font-weight: 900;
+  background: rgba(8, 19, 35, 0.34);
+}
+
+.hero-coin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 34rem;
+}
+
+.coin-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(30rem, 78vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(from 300deg, var(--green), var(--gold), var(--orange), var(--green));
+  padding: 0.36rem;
+}
+
+.coin-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0.65rem;
+  border-radius: 50%;
+  background: #0a1427;
+}
+
+.coin-ring strong {
+  position: absolute;
+  bottom: 17%;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.coin-core {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 122, 0, 0.17);
+}
+
+.coin-core img {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+.supply-badge,
+.chain-badge {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--panel-strong);
+  color: var(--muted);
+}
+
+.supply-badge {
+  left: 2%;
+  top: 18%;
+}
+
+.chain-badge {
+  right: 0;
+  bottom: 13%;
+}
+
+.supply-badge strong,
+.chain-badge strong {
+  color: var(--text);
+  font-size: 1.4rem;
+}
+
+.stats-band,
+.stake-section,
+.content-grid,
+.roadmap {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.stats-band {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--line);
+}
+
+.stats-band div {
+  display: grid;
+  gap: 0.35rem;
+  padding: clamp(1rem, 2.3vw, 1.5rem);
+  background: rgba(10, 20, 39, 0.78);
+}
+
+.stats-band span,
+.projection-grid span,
+.info-list span {
+  color: var(--faint);
+  font-size: 0.92rem;
+}
+
+.stats-band strong {
+  font-size: clamp(1.25rem, 2.6vw, 2rem);
+}
+
+.stake-section {
+  padding: 6rem 0 2rem;
+}
+
+.section-heading {
+  max-width: 46rem;
+  margin-bottom: 2rem;
+}
+
+.section-heading h2,
+.content-grid h2,
+.roadmap h2 {
+  margin: 0.9rem 0 0.8rem;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  letter-spacing: 0;
+}
+
+.stake-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.72fr);
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+.stake-panel,
+.info-panel,
+.content-grid article,
+.roadmap-items div {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+}
+
+.stake-panel {
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.field-row,
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.field-row label,
+.term-grid legend {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.max-button {
+  border: 1px solid rgba(255, 122, 0, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 122, 0, 0.12);
+  color: var(--orange);
+  padding: 0.4rem 0.8rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.amount-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.7rem 0 1.3rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.5rem;
+  background: rgba(3, 10, 20, 0.46);
+}
+
+.amount-box input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  font-weight: 900;
+}
+
+.amount-box span {
+  color: var(--orange);
+  font-weight: 900;
+}
+
+.term-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0 0 1.2rem;
+  border: 0;
+}
+
+.term-grid legend {
+  grid-column: 1 / -1;
+  margin-bottom: 0.15rem;
+}
+
+.term-grid input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.term-grid span {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 5.6rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.5rem;
+  background: rgba(8, 19, 35, 0.62);
+  cursor: pointer;
+}
+
+.term-grid strong {
+  font-size: 1.05rem;
+}
+
+.term-grid em {
+  color: var(--green);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.term-grid input:checked + span {
+  border-color: rgba(255, 122, 0, 0.82);
+  background: rgba(255, 122, 0, 0.16);
+}
+
+.projection-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.projection-grid div {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 5.2rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.5rem;
+  background: rgba(3, 10, 20, 0.36);
+}
+
+.projection-grid strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 1.02rem;
+}
+
+.status-line {
+  min-height: 1.5rem;
+  margin: 1.1rem 0;
+  color: var(--muted);
+}
+
+.status-line.is-error {
+  color: #ffb0a6;
+}
+
+.status-line.is-success {
+  color: #81f0b2;
+}
+
+.stake-button {
+  width: 100%;
+  min-height: 4rem;
+  font-size: 1.15rem;
+}
+
+.stake-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+  opacity: 0.68;
+  transform: none;
+}
+
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.info-panel h3 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+.info-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.info-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 5rem 0 2rem;
+}
+
+.content-grid article {
+  min-height: 18rem;
+  padding: clamp(1.2rem, 2.5vw, 1.7rem);
+}
+
+.content-grid h2 {
+  font-size: clamp(1.6rem, 2.6vw, 2.15rem);
+}
+
+.roadmap {
+  padding: 4rem 0 5rem;
+}
+
+.roadmap-items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.roadmap-items div {
+  padding: 1.35rem;
+}
+
+.roadmap-items strong {
+  color: var(--orange);
+  font-size: 1.2rem;
+}
+
+.wallet-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.wallet-modal[hidden] {
+  display: none;
+}
+
+.modal-card {
+  width: min(27rem, 100%);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #101a2d;
+  padding: 1rem;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.46);
+}
+
+.modal-head h2 {
+  margin: 0;
+}
+
+.modal-head button {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.6rem;
+}
+
+.wallet-list {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 0.9rem;
+  cursor: pointer;
+}
+
+.wallet-option:hover {
+  border-color: rgba(255, 122, 0, 0.7);
+}
+
+.wallet-option img {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+}
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem clamp(1rem, 4vw, 3rem);
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+}
+
+@media (max-width: 980px) {
+  .site-header {
+    grid-template-columns: auto auto;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero,
+  .stake-layout,
+  .content-grid,
+  .roadmap-items {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .hero-coin {
+    min-height: 27rem;
+  }
+
+  .projection-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    gap: 0.7rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .brand span {
+    font-size: 1.3rem;
+  }
+
+  .wallet-button {
+    min-width: auto;
+    padding: 0.72rem 0.85rem;
+    font-size: 0.9rem;
+  }
+
+  .hero {
+    padding-top: 3rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.3rem, 18vw, 5rem);
+  }
+
+  .stats-band,
+  .term-grid,
+  .projection-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    display: grid;
+  }
+
+  .supply-badge {
+    left: 0;
+    top: 6%;
+  }
+
+  .chain-badge {
+    bottom: 2%;
+  }
+}
